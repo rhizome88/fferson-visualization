@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Super-additive Cooperation Visualization</title>
+
+    <!-- Include p5.js Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+
+    <!-- Inline CSS -->
+    <style>
+      body {
+        font-family: sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 20px;
+        background-color: #f8f8f8;
+        min-height: 100vh;
+        box-sizing: border-box;
+      }
+
+      h1 {
+        margin-bottom: 15px;
+        text-align: center;
+      }
+
+      /* Introductory Explanation Area */
+      #intro-explanation {
+          background-color: #fff;
+          border: 1px solid #ccc;
+          padding: 15px;
+          margin-bottom: 20px;
+          width: 95%;
+          max-width: 1180px;
+          box-sizing: border-box;
+          font-size: 0.95em;
+          line-height: 1.5;
+      }
+       #intro-explanation h2 {
+           margin-top: 0;
+           margin-bottom: 10px;
+           font-size: 1.2em;
+       }
+       #intro-explanation p, #intro-explanation ul {
+           margin-bottom: 10px;
+       }
+        #intro-explanation ul {
+            padding-left: 20px;
+        }
+        /* Style for the prominent prompt */
+        .prompt {
+            font-weight: bold;
+            background-color: #fffacd; /* Light yellow background */
+            padding: 10px;
+            border: 1px solid #f0e68c;
+            border-radius: 4px;
+            margin-top: 15px;
+            margin-bottom: 15px;
+        }
+
+
+      /* Main layout container */
+      #main-layout {
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        align-items: flex-start;
+        width: 95%;
+        max-width: 1200px;
+        gap: 20px;
+      }
+
+      /* Container for the canvas */
+      #canvas-container {
+        flex-shrink: 0;
+      }
+
+      canvas {
+        border: 1px solid #ccc;
+        display: block;
+      }
+
+      /* Container for controls and (simplified) explanation on the right */
+      #right-panel {
+        display: flex;
+        flex-direction: column;
+        width: 350px; /* Keep width for controls */
+        flex-shrink: 0;
+      }
+
+      #controls-container {
+         margin-bottom: 15px;
+         text-align: center;
+      }
+
+      /* SIMPLIFIED Explanation Div */
+      #explanation-div {
+        padding: 15px;
+        border: 1px solid #ccc;
+        background-color: #f0f0f0;
+        font-size: 1em; /* Make state slightly larger */
+        line-height: 1.4;
+        text-align: center;
+        min-height: 60px; /* Give it some fixed height */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        box-sizing: border-box;
+      }
+      #explanation-div p {
+         margin: 0; /* Remove default paragraph margin */
+         font-weight: bold;
+         color: #333;
+      }
+
+
+      button {
+        padding: 10px 15px;
+        margin: 5px 10px;
+        font-size: 1em;
+        cursor: pointer;
+        background-color: #e7e7e7;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        transition: background-color 0.2s, opacity 0.3s;
+      }
+      button:hover:not(:disabled) {
+        background-color: #dcdcdc;
+      }
+      button:disabled {
+          cursor: not-allowed;
+          opacity: 0.6;
+      }
+
+    </style>
+
+</head>
+<body>
+    <h1>Super-additive Cooperation Visualization</h1>
+
+    <!-- Introductory Explanation Area -->
+    <div id="intro-explanation">
+        <h2>Understanding the Simulation & Paper</h2>
+        <p>
+            This simulation illustrates key concepts from the "Super-additive Cooperation" paper, which explores how robust ingroup cooperation may have evolved in humans through the combined effects of <strong>Repeated Interactions</strong> (often fragile alone) and <strong>Intergroup Competition</strong> (which selects for successful groups). The paper argues their *joint* effect (super-additivity) strongly favors <strong>parochial cooperation</strong> (ingroup focus).
+        </p>
+         <p><strong>Simulation Elements:</strong></p>
+        <ul>
+            <li><strong>Circles:</strong> Represent groups.</li>
+            <li><strong>Color:</strong> Simplified internal strategy (<b>Green</b> = Parochial Coop., <b>Yellow</b> = Ambiguous, <b>Red</b> = Uncoop.).</li>
+            <li><strong>Size:</strong> Group fitness/success. Green tends to grow, Red shrinks.</li>
+            <li><strong>Movement & Drift:</strong> Simulates randomness and the instability of cooperation without selection pressure.</li>
+        </ul>
+
+        <!-- Button Descriptions Moved Here -->
+        <p><strong>Interactive Buttons:</strong></p>
+        <ul>
+            <li><strong>Trigger Group Competition:</strong> This simulates a conflict or competition event between two randomly chosen groups. The winner (based on strategy, size, penalty) imposes its strategy on the loser. This directly represents the <strong>group-level selection</strong> mechanism discussed in the paper.</li>
+            <li><strong>Simulate Outgroup Coop. Cost (Malus):</strong> This applies a fitness penalty (shrinking, disadvantage in competition) to a random group. It represents the potential <strong>evolutionary cost or risk</strong> associated with investing resources in outgroup cooperation, especially when intergroup competition makes parochialism (ingroup focus) more advantageous, as argued in the paper.</li>
+        </ul>
+
+         <!-- Prominent Prompt -->
+        <div class="prompt">
+            <strong>Your Role:</strong><br>
+            Click the "<strong>Trigger Group Competition</strong>" button *repeatedly*! Each click simulates a selection event. By doing this often, you manually mimic the evolutionary pressure of group competition over time. Observe if this pressure favors the spread of Green (parochial cooperative) groups, stabilizing them against drift, as the paper suggests. You are essentially acting as the selective force of the environment!
+        </div>
+    </div>
+
+    <!-- Main Layout Container -->
+    <div id="main-layout">
+
+        <!-- Container for the p5.js Canvas -->
+        <div id="canvas-container">
+            <!-- Canvas will be placed here by p5.js -->
+        </div>
+
+        <!-- Right Panel for Controls and SIMPLIFIED State Display -->
+        <div id="right-panel">
+            <div id="controls-container">
+                <!-- Buttons will be created here by p5.js -->
+            </div>
+            <!-- SIMPLIFIED Explanation Div -->
+            <div id="explanation-div">
+                <p>State: Initializing...</p>
+            </div>
+        </div>
+
+    </div> <!-- End of #main-layout -->
+
+
+    <!-- Inline JavaScript (p5.js Sketch) -->
+    <script>
+        // --- Global Parameters (unchanged) ---
+        const NUM_GROUPS = 15;
+        const BASE_SIZE = 25;
+        const MAX_SIZE = 70;
+        const MIN_SIZE = 12;
+        const DRIFT_PROBABILITY = 0.0008;
+        const GROWTH_RATE_GREEN = 0.04;
+        const SHRINK_RATE_RED = 0.025;
+        const PENALTY_SHRINK_RATE = 0.06;
+        const PENALTY_DURATION = 180;
+        const COMPETITION_MOVE_SPEED = 0.025;
+        const COLLISION_PADDING = 4;
+        const NORMAL_MOVE_LERP = 0.003;
+        const TARGET_UPDATE_PROB = 0.005;
+
+        const CANVAS_WIDTH = 700;
+        const CANVAS_HEIGHT = 450;
+
+        let groups = [];
+        let competitionButton;
+        let outgroupCoopButton;
+        let legendText;
+        let explanationDiv; // Reference to the simplified div
+
+        let competitionState = 'idle';
+        let competingGroup1 = null;
+        let competingGroup2 = null;
+        let competitionWinner = null;
+        let competitionLoser = null;
+        let stateTimer = 0;
+
+        // REMOVED: lastEventType and lastEventDetails are no longer needed
+
+        let colorRed, colorYellow, colorGreen, colorPenaltyOutline, colorBackground, colorLine;
+
+        function setup() {
+            let canvas = createCanvas(CANVAS_WIDTH, CANVAS_HEIGHT);
+            canvas.parent('canvas-container');
+            explanationDiv = select('#explanation-div'); // Select the simplified div
+
+            // Define Colors (unchanged)
+            colorBackground = color(248, 248, 248);
+            colorRed = color(255, 69, 0, 220);
+            colorYellow = color(255, 215, 0, 220);
+            colorGreen = color(46, 139, 87, 220);
+            colorPenaltyOutline = color(0, 0, 0);
+            colorLine = color(100, 100, 100, 150);
+
+            // Initialize Groups (unchanged)
+            while (groups.length < NUM_GROUPS) { /* ... unchanged ... */
+                 let potentialX = random(BASE_SIZE, width - BASE_SIZE);
+                let potentialY = random(BASE_SIZE, height - 40 - BASE_SIZE);
+                let potentialSize = BASE_SIZE + random(-3, 3);
+                let overlapping = false;
+                for (let existingGroup of groups) {
+                    let d = dist(potentialX, potentialY, existingGroup.x, existingGroup.y);
+                    if (d < (potentialSize / 2 + existingGroup.size / 2 + COLLISION_PADDING * 6)) {
+                        overlapping = true;
+                        break;
+                    }
+                }
+                if (!overlapping) {
+                    let startStrategy = random(['Red', 'Yellow', 'Green']);
+                    groups.push(new Group(potentialX, potentialY, potentialSize, startStrategy));
+                }
+            }
+
+            // Create Buttons (unchanged placement)
+            competitionButton = createButton('Trigger Group Competition');
+            competitionButton.parent('controls-container');
+            competitionButton.mousePressed(initiateCompetition);
+            outgroupCoopButton = createButton('Simulate Outgroup Coop. Cost (Malus)'); // Using the clearer name
+            outgroupCoopButton.parent('controls-container');
+            outgroupCoopButton.mousePressed(promoteOutgroupCooperation);
+
+            legendText = "Red: Uncoop. | Yellow: Ambiguous | Green: Parochial Coop. | Size = Fitness";
+
+            frameRate(60);
+            updateExplanation('idle'); // Start in idle state
+        }
+
+        function draw() {
+             // Draw logic largely unchanged
+            background(colorBackground);
+
+            if (competitionState === 'idle') { resolveCollisions(); }
+
+            for (let group of groups) { /* ... update, move, draw ... unchanged ... */
+                if (competitionState === 'idle') {
+                    group.update();
+                    group.moveTowardsTarget();
+                }
+                 if (group.penaltyTimer > 0) { group.penaltyTimer--; }
+                if (competitionState === 'moving' && (group === competingGroup1 || group === competingGroup2)) {
+                     group.moveTowardsCompetitionTarget();
+                }
+                group.draw();
+            }
+
+            handleCompetitionState();
+
+            fill(50); noStroke(); textAlign(CENTER, CENTER); textSize(12);
+            text(legendText, CANVAS_WIDTH / 2, CANVAS_HEIGHT - 20);
+
+            competitionButton.elt.disabled = (competitionState !== 'idle');
+            outgroupCoopButton.elt.disabled = (competitionState !== 'idle');
+        }
+
+        // --- Collision Resolution (unchanged) ---
+        function resolveCollisions() { /* ... unchanged ... */
+             for (let i = 0; i < groups.length; i++) {
+                for (let j = i + 1; j < groups.length; j++) {
+                    let g1 = groups[i]; let g2 = groups[j];
+                    let d = dist(g1.x, g1.y, g2.x, g2.y);
+                    let minDist = (g1.size / 2 + g2.size / 2 + COLLISION_PADDING);
+                    if (d < minDist && d > 0) {
+                        let overlap = minDist - d;
+                        let dx = g1.x - g2.x; let dy = g1.y - g2.y;
+                        let pushX = (dx / d) * (overlap / 2); let pushY = (dy / d) * (overlap / 2);
+                        g1.x += pushX; g1.y += pushY;
+                        g2.x -= pushX; g2.y -= pushY;
+                        g1.constrainToBounds(); g1.targetX = g1.x; g1.targetY = g1.y;
+                        g2.constrainToBounds(); g2.targetX = g2.x; g2.targetY = g2.y;
+                    }
+                }
+            }
+        }
+
+        // --- Competition State Machine (unchanged logic) ---
+        function handleCompetitionState() { /* ... unchanged logic ... */
+             stateTimer++;
+            if (competitionState === 'moving') {
+                if (!competingGroup1 || !competingGroup2) { resetCompetition(); return; }
+                push(); stroke(colorLine); strokeWeight(2);
+                line(competingGroup1.x, competingGroup1.y, competingGroup2.x, competingGroup2.y);
+                pop();
+                let distance = dist(competingGroup1.x, competingGroup1.y, competingGroup2.x, competingGroup2.y);
+                let collisionThreshold = (competingGroup1.size / 2 + competingGroup2.size / 2) * 0.95;
+                if (distance < collisionThreshold || stateTimer > 600) {
+                    if (stateTimer > 600) console.warn("Competition move timed out, forcing resolution.");
+                    updateExplanation('resolving'); // Update simple state display
+                    competitionState = 'resolving';
+                    resolveAndResetCompetition();
+                }
+            }
+        }
+
+        // --- resolveAndResetCompetition (Simplified: No event tracking) ---
+        function resolveAndResetCompetition() {
+            console.log("Resolving competition...");
+            if (competitionLoser && competitionWinner) {
+                console.log(`Resolution: ${competitionWinner.strategy} wins, ${competitionLoser.strategy} becomes ${competitionWinner.strategy}`);
+                // REMOVED: lastEventType/Details storage
+                competitionLoser.changeStrategy(competitionWinner.strategy);
+            } else { console.log("Competition resolved without clear winner/loser or change."); }
+            resetCompetition(); // Resets state and calls updateExplanation('idle')
+        }
+
+        // --- resetCompetition (Simplified: No event tracking needed) ---
+        function resetCompetition() {
+            competitionState = 'idle';
+            competingGroup1 = null; competingGroup2 = null;
+            competitionWinner = null; competitionLoser = null;
+            stateTimer = 0;
+            console.log("--- Returning to Idle state ---");
+            updateExplanation('idle'); // Update simple state display
+        }
+
+        // --- Button Actions (Simplified: No event tracking) ---
+        function initiateCompetition() {
+            if (competitionState !== 'idle' || groups.length < 2) return;
+            console.log("--- Selecting groups for competition ---");
+            competitionState = 'selecting'; stateTimer = 0;
+             // ... selection logic unchanged ...
+             let index1 = floor(random(groups.length)); let index2;
+            do { index2 = floor(random(groups.length)); } while (index2 === index1);
+            competingGroup1 = groups[index1]; competingGroup2 = groups[index2];
+            let score1 = calculateScore(competingGroup1); let score2 = calculateScore(competingGroup2);
+            if (score1 > score2) { competitionWinner = competingGroup1; competitionLoser = competingGroup2; }
+            else if (score2 > score1) { competitionWinner = competingGroup2; competitionLoser = competingGroup1; }
+            else { if (random() < 0.5) { competitionWinner = competingGroup1; competitionLoser = competingGroup2; } else { competitionWinner = competingGroup2; competitionLoser = competingGroup1; } }
+            console.log(`Selected: ${competingGroup1.strategy} vs ${competingGroup2.strategy}. Expected Winner: ${competitionWinner.strategy}`);
+
+            updateExplanation('selecting'); // Update simple state display
+
+            let midX = (competingGroup1.x + competingGroup2.x) / 2; let midY = (competingGroup1.y + competingGroup2.y) / 2;
+            competingGroup1.competitionTargetX = midX; competingGroup1.competitionTargetY = midY;
+            competingGroup2.competitionTargetX = midX; competingGroup2.competitionTargetY = midY;
+
+            setTimeout(() => {
+                 if (competitionState === 'selecting') {
+                    competitionState = 'moving';
+                    updateExplanation('moving'); // Update simple state display
+                 }
+            }, 500);
+        }
+
+        function calculateScore(group) { /* unchanged */
+            let baseScore = 0;
+            if (group.strategy === 'Green') baseScore = 3;
+            else if (group.strategy === 'Yellow') baseScore = 2;
+            else baseScore = 1;
+            let sizeBonus = (group.size / BASE_SIZE - 1) * 0.6;
+            let penaltyMalus = group.isPenalized() ? -3.0 : 0;
+            return baseScore + sizeBonus + penaltyMalus + random(-0.05, 0.05);
+        }
+
+        function promoteOutgroupCooperation() {
+             if (competitionState !== 'idle' || groups.length === 0) return;
+            console.log("--- Applying Outgroup Coop Cost (Malus) ---");
+            let availableIndices = [];
+            for(let i=0; i<groups.length; i++) { if (!groups[i].isPenalized()) { availableIndices.push(i); } }
+            if (availableIndices.length > 0) {
+                let randomIndex = random(availableIndices);
+                groups[randomIndex].applyPenalty();
+                console.log(`Group ${randomIndex} (${groups[randomIndex].strategy}) receives malus.`);
+                // REMOVED: lastEventType/Details storage
+            } else {
+                console.log("Malus skipped: All groups already penalized.");
+                 // REMOVED: lastEventType/Details storage
+            }
+             // No need to call updateExplanation here, as state remains 'idle'
+             // If you wanted a brief confirmation, you could add a temporary state or message
+        }
+
+
+        // --- Explanation Update Function (SIMPLIFIED: Only shows current state) ---
+        function updateExplanation(context) {
+             if (!explanationDiv) return;
+
+             let stateText = "Unknown";
+             switch(context) {
+                 case 'idle': stateText = "Idle"; break;
+                 case 'selecting': stateText = "Competition: Selecting"; break;
+                 case 'moving': stateText = "Competition: Moving"; break;
+                 case 'resolving': stateText = "Competition: Resolving"; break;
+                 default: stateText = context; // Show context directly if unknown
+             }
+
+             // Update the simplified div content
+             explanationDiv.html(`<p>Current State: ${stateText}</p>`);
+        }
+
+
+        // --- Group Class (unchanged) ---
+        class Group { /* ... unchanged ... */
+            constructor(x, y, startSize, startStrategy) { this.x = x; this.y = y; this.targetX = x; this.targetY = y; this.competitionTargetX = x; this.competitionTargetY = y; this.size = startSize; this.strategy = startStrategy; this.setColorBasedOnStrategy(); this.penaltyTimer = 0; }
+            setColorBasedOnStrategy() { if (this.strategy === 'Red') this.color = colorRed; else if (this.strategy === 'Yellow') this.color = colorYellow; else this.color = colorGreen; }
+            update() { if (random() < DRIFT_PROBABILITY) { let oldStrategy = this.strategy; if (this.strategy === 'Green') this.strategy = 'Yellow'; else if (this.strategy === 'Yellow') this.strategy = random(['Red', 'Green']); else this.strategy = 'Yellow'; this.setColorBasedOnStrategy(); } let currentGrowthRate = 0; if (this.isPenalized()) { currentGrowthRate = -PENALTY_SHRINK_RATE; } else { if (this.strategy === 'Green') currentGrowthRate = GROWTH_RATE_GREEN; else if (this.strategy === 'Red') currentGrowthRate = -SHRINK_RATE_RED; } this.size += currentGrowthRate; this.size = constrain(this.size, MIN_SIZE, MAX_SIZE); if (random() < TARGET_UPDATE_PROB) { this.targetX = random(this.size / 2, width - this.size / 2); this.targetY = random(this.size / 2, height - 40 - this.size / 2); } }
+            moveTowardsTarget() { this.x = lerp(this.x, this.targetX, NORMAL_MOVE_LERP); this.y = lerp(this.y, this.targetY, NORMAL_MOVE_LERP); }
+            moveTowardsCompetitionTarget() { let d = dist(this.x, this.y, this.competitionTargetX, this.competitionTargetY); if (d > this.size * 0.2) { this.x = lerp(this.x, this.competitionTargetX, COMPETITION_MOVE_SPEED); this.y = lerp(this.y, this.competitionTargetY, COMPETITION_MOVE_SPEED); } }
+            constrainToBounds() { this.x = constrain(this.x, this.size / 2, width - this.size / 2); this.y = constrain(this.y, this.size / 2, height - 40 - this.size / 2); }
+            draw() { push(); let currentStroke = color(0,0); let currentWeight = 0; if (this.isPenalized()) { currentStroke = colorPenaltyOutline; currentWeight = 3; } if ((this === competingGroup1 || this === competingGroup2) && (competitionState === 'moving' || competitionState === 'selecting')) { currentWeight = this.isPenalized() ? 4 : 2.5; currentStroke = this.isPenalized()? color(255,0,255, 220) : color(0,0,255, 200); } if(currentWeight > 0) { strokeWeight(currentWeight); stroke(currentStroke); } else { noStroke(); } fill(this.color); ellipse(this.x, this.y, this.size, this.size); pop(); }
+            changeStrategy(newStrategy) { if (this.strategy !== newStrategy) { this.strategy = newStrategy; this.setColorBasedOnStrategy(); } }
+            applyPenalty() { this.penaltyTimer = PENALTY_DURATION; }
+            isPenalized() { return this.penaltyTimer > 0; }
+         }
+
+    </script>
+
+</body>
+</html>
